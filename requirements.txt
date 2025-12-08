@@ -19,3 +19,6 @@ numpy
 watchdog
 paramiko
 boto3
+python-socketio
+flask-socketio
+eventlet
