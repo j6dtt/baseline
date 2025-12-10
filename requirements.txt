@@ -22,3 +22,5 @@ boto3
 python-socketio
 flask-socketio
 eventlet
+gevent
+gevent-websocket
