@@ -24,3 +24,4 @@ flask-socketio
 eventlet
 gevent
 gevent-websocket
+APScheduler==3.10.4
