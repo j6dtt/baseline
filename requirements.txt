@@ -21,7 +21,8 @@ paramiko
 boto3
 python-socketio
 flask-socketio
+flask-login
 eventlet
 gevent
 gevent-websocket
-APScheduler==3.10.4
+APScheduler
