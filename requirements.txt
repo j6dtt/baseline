@@ -29,3 +29,13 @@ APScheduler
 jaraco.context>=6.1.0
 protobuf>=6.33.5
 wheel>=0.46.2
+pdfplumber
+PyPDF2
+mammoth
+python-docx
+python-pptx
+openpyxl
+xlrd==1.2.0
+striprtf
+odfpy
+redis
