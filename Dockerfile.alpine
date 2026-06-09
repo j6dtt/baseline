@@ -1,0 +1,55 @@
+# ---------- builder ----------
+FROM python:3.13-alpine AS builder
+
+ENV PIP_NO_CACHE_DIR=1
+
+# Build deps only (kept out of final image)
+# build-base   → gcc/g++/make/musl-dev (replaces build-essential + libc6-dev)
+# libffi-dev   → cffi, cryptography, paramiko
+# openssl-dev  → SSL bindings
+# linux-headers→ gevent (libev needs kernel headers)
+# cargo        → cryptography Rust ext fallback when no musllinux wheel is cached
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    linux-headers \
+    cargo
+
+WORKDIR /build
+COPY requirements-alpine.txt .
+
+# Prebuild wheels for all dependencies (outputs to /wheels)
+RUN pip wheel --trusted-host pypi.org --trusted-host files.pythonhosted.org --wheel-dir /wheels -r requirements-alpine.txt
+
+
+# ---------- runtime ----------
+FROM python:3.13-alpine
+
+# Good Python container defaults
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# libffi and openssl are already present (Python itself depends on them).
+# libstdc++ + libgcc are needed at runtime by gevent, some numpy ops, and
+# other C++ compiled extensions.
+RUN apk add --no-cache \
+    libstdc++ \
+    libgcc \
+    iputils-ping \
+    util-linux-misc \
+ && apk upgrade --no-cache xz-libs
+
+WORKDIR /app
+
+# Bring in prebuilt wheels and the requirements file
+COPY --from=builder /wheels /wheels
+COPY --from=builder /build/requirements-alpine.txt .
+
+# Install strictly from the local wheels (no internet)
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-index --find-links=/wheels -r requirements-alpine.txt \
+ && rm -rf /wheels
+
+# Upgrade pip
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip

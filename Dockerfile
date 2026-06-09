@@ -23,10 +23,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# If your app actually needs these at runtime, keep them; otherwise remove this block.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl iputils-ping dnsutils util-linux less \
- && apt-get upgrade -y libssl3t64 openssl openssl-provider-legacy libc-bin libc6 \
+ && apt-get install -y --no-install-recommends iputils-ping util-linux \
+ && apt-get upgrade -y libssl3t64 openssl openssl-provider-legacy libc-bin libc6 libgnutls30t64 \
+ && dpkg --remove --force-remove-essential perl-base \
+ && apt-get remove -y --purge --allow-remove-essential ncurses-bin \
+ && apt-get remove -y --purge libncursesw6 \
+ && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
