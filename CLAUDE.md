@@ -50,8 +50,9 @@ trivy image python:3.13-slim-u10
 - Reason: several packages pinned in the slim `requirements.txt` (pandas 2.1.4, gevent 24.2.1, eventlet 0.35.2) predate Python 3.13 and fail to build on Alpine
 - `PyPDF2` replaced with `pypdf` (PyPDF2 is abandoned and has no musllinux wheels)
 - Builder stage installs: `build-base libffi-dev openssl-dev linux-headers cargo` (cargo is for cryptography Rust extension fallback)
-- Runtime stage adds: `libstdc++ libgcc` (needed by gevent C extensions and numpy)
-- `xz-libs` is upgraded via `apk upgrade` (not `apk add`) because it's pre-installed by the base image and `apk add` won't upgrade it
+- Runtime stage adds: `bash libstdc++ libgcc` (bash for script compatibility; libstdc++/libgcc needed by gevent C extensions and numpy)
+- `xz-libs`, `libcrypto3`, `libssl3` are upgraded via `apk upgrade` (not `apk add`) because they are pre-installed by the base image and `apk add` won't upgrade them
+- `requirements-alpine.txt` is deleted inside the install `RUN` step so it doesn't land in the final image
 
 ### gunicorn + gevent + WebSocket (for consuming apps)
 - Apps using Flask-SocketIO with `async_mode='gevent'` must use `worker_class = "geventwebsocket.gunicorn.workers.GeventWebSocketWorker"` — the plain `"gevent"` worker does not handle WebSocket protocol upgrades

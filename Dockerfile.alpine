@@ -35,11 +35,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # libstdc++ + libgcc are needed at runtime by gevent, some numpy ops, and
 # other C++ compiled extensions.
 RUN apk add --no-cache \
+    bash \
     libstdc++ \
     libgcc \
     iputils-ping \
     util-linux-misc \
- && apk upgrade --no-cache xz-libs
+ && apk upgrade --no-cache xz-libs libcrypto3 libssl3
 
 WORKDIR /app
 
@@ -49,7 +50,7 @@ COPY --from=builder /build/requirements-alpine.txt .
 
 # Install strictly from the local wheels (no internet)
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-index --find-links=/wheels -r requirements-alpine.txt \
- && rm -rf /wheels
+ && rm -rf /wheels requirements-alpine.txt
 
 # Upgrade pip
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip
